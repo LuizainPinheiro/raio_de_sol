@@ -1,88 +1,58 @@
 package com.raiodesol.controller;
 
-import com.raiodesol.exception.CpfJaCadastradoException;
 import com.raiodesol.model.Aluno;
-import com.raiodesol.repository.AlunoRepository;
+import com.raiodesol.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping ("/alunos")
 public class AlunoController {
 
     @Autowired
-    private AlunoRepository repository;
+    private AlunoService alunoService;
+
 
     @GetMapping
     public List<Aluno> listarTodos() {
-        return repository.findAll();
+        return alunoService.listarTodos();
     }
 
     @PostMapping
     public ResponseEntity<Aluno> criarAluno(@Valid @RequestBody Aluno aluno) {
-
-        if(repository.existsByCpf(aluno.getCpf())){
-            throw new CpfJaCadastradoException(aluno.getCpf());
-        }
-
-        var salvo = repository.save(aluno);
+        Aluno salvo = alunoService.criarAluno(aluno);
         return ResponseEntity.status(201).body(salvo);
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<Aluno> atualizar(@PathVariable Long id, @Valid @RequestBody Aluno aluno){
-        Optional<Aluno> alunoExist = repository.findById(id);
-
-        if (alunoExist.isPresent()){
-            Aluno alunoAtualizado = alunoExist.get();
-
-            alunoAtualizado.setNome(aluno.getNome());
-            alunoAtualizado.setCpf(aluno.getCpf());
-            alunoAtualizado.setDtNascimento(aluno.getDtNascimento());
-            alunoAtualizado.setPlano(aluno.getPlano());
-            alunoAtualizado.setMatriculaAtiva(aluno.getMatriculaAtiva());
-
-            Aluno salvo = repository.save(alunoAtualizado);
-            return ResponseEntity.ok(salvo);
-        }
-        return ResponseEntity.notFound().build();
+        Aluno atualizado = alunoService.atualizar(id, aluno);
+            return ResponseEntity.ok(atualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Aluno> deletar(@PathVariable Long id){
-        if (!repository.existsById(id)){
-            return ResponseEntity.notFound().build();
-        }
-
-        repository.deleteById(id);
+        alunoService.deletar(id);
         return ResponseEntity.noContent().build();
+
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Aluno> buscarPorId(@PathVariable Long id){
-        return repository.findById(id)
-                .map(aluno -> ResponseEntity.ok(aluno))
-                .orElse(ResponseEntity.notFound().build());
+       return ResponseEntity.ok(alunoService.buscarPorId(id));
     }
 
-    @GetMapping("/matricula/{id}")
-    public ResponseEntity<String> matriculaAtiva(@PathVariable Long id){
-        Optional<Aluno> aluno = repository.findById(id);
-
-        if (aluno.isPresent()) {
-            String status = aluno.get().getMatriculaAtiva()
-                    ? "Matrícula ativa"
-                    : "Matrícula inativa";
-
-            return ResponseEntity.ok(status);
-        }
-
-        return ResponseEntity.notFound().build();
+    @GetMapping("/{id}/status")
+    public ResponseEntity<String> verificarStatus(@PathVariable Long id){
+       Aluno aluno = alunoService.buscarPorId(id);
+       if(aluno.getMatriculaAtiva()){
+           return ResponseEntity.ok("Matricula_ativa");
+       }
+       return ResponseEntity.ok("Matricula_inativa");
     }
+
 }

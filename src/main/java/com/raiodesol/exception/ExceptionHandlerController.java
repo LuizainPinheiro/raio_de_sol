@@ -15,10 +15,10 @@ import java.util.Map;
 public class ExceptionHandlerController {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> errosDeValidacao(MethodArgumentNotValidException erro){
+    public ResponseEntity<Map<String, String>> errosDeValidacao(MethodArgumentNotValidException erro) {
         Map<String, String> erros = new HashMap<>();
 
-        erro.getBindingResult().getAllErrors().forEach((error) ->{
+        erro.getBindingResult().getAllErrors().forEach((error) -> {
             String campoQueDeuErro = ((FieldError) error).getField();
             String mensagemDeErro = error.getDefaultMessage();
 
@@ -29,8 +29,9 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(erros, HttpStatus.BAD_REQUEST);
 
     }
+
     @ExceptionHandler(CpfJaCadastradoException.class)
-    public ResponseEntity<Map<String, String>> handleConflito(CpfJaCadastradoException erro){
+    public ResponseEntity<Map<String, String>> handleConflito(CpfJaCadastradoException erro) {
         Map<String, String> error = new HashMap<>();
 
         error.put("erro", erro.getMessage());
@@ -38,4 +39,12 @@ public class ExceptionHandlerController {
 
     }
 
+    @ExceptionHandler(AlunoNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleConflito(AlunoNotFoundException erro) {
+        Map<String, String> error = new HashMap<>();
+
+        error.put("erro", erro.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+    }
 }

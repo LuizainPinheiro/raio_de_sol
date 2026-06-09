@@ -1,0 +1,53 @@
+package com.raiodesol.service;
+
+import com.raiodesol.exception.AlunoNotFoundException;
+import com.raiodesol.exception.CpfJaCadastradoException;
+import com.raiodesol.model.Aluno;
+import com.raiodesol.repository.AlunoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class AlunoService {
+
+    @Autowired
+    private AlunoRepository alunoRepository;
+
+    public List<Aluno> listarTodos(){
+        return alunoRepository.findAll();
+    }
+
+    public Aluno criarAluno(Aluno aluno) {
+        if(alunoRepository.existsByCpf(aluno.getCpf())){
+            throw new CpfJaCadastradoException(aluno.getCpf());
+        }
+        return alunoRepository.save(aluno);
+    }
+
+    public Aluno atualizar(Long id, Aluno aluno){
+        Aluno alunoExist = alunoRepository.findById(id)
+                .orElseThrow(() -> new AlunoNotFoundException(id));
+
+        alunoExist.setNome(aluno.getNome());
+        alunoExist.setCpf(aluno.getCpf());
+        alunoExist.setDtNascimento(aluno.getDtNascimento());
+        alunoExist.setPlano(aluno.getPlano());
+        alunoExist.setMatriculaAtiva(aluno.getMatriculaAtiva());
+
+        return alunoRepository.save(alunoExist);
+    }
+
+    public void deletar(Long id){
+        alunoRepository.findById(id)
+                .orElseThrow(() -> new AlunoNotFoundException(id));
+
+        alunoRepository.deleteById(id);
+    }
+
+    public Aluno buscarPorId(Long id){
+        return alunoRepository.findById(id)
+                .orElseThrow(() -> new AlunoNotFoundException(id));
+    }
+}
