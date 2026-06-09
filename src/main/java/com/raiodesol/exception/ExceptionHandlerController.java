@@ -29,5 +29,13 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(erros, HttpStatus.BAD_REQUEST);
 
     }
+    @ExceptionHandler(CpfJaCadastradoException.class)
+    public ResponseEntity<Map<String, String>> handleConflito(CpfJaCadastradoException erro){
+        Map<String, String> error = new HashMap<>();
+
+        error.put("erro", erro.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+
+    }
 
 }

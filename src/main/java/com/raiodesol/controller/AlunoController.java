@@ -1,5 +1,6 @@
 package com.raiodesol.controller;
 
+import com.raiodesol.exception.CpfJaCadastradoException;
 import com.raiodesol.model.Aluno;
 import com.raiodesol.repository.AlunoRepository;
 import jakarta.validation.Valid;
@@ -24,9 +25,15 @@ public class AlunoController {
 
     @PostMapping
     public ResponseEntity<Aluno> criarAluno(@Valid @RequestBody Aluno aluno) {
+
+        if(repository.existsByCpf(aluno.getCpf())){
+            throw new CpfJaCadastradoException(aluno.getCpf());
+        }
+
         var salvo = repository.save(aluno);
         return ResponseEntity.status(201).body(salvo);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Aluno> atualizar(@PathVariable Long id, @Valid @RequestBody Aluno aluno){
